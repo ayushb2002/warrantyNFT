@@ -22,11 +22,11 @@ contract WarrantyToken is ERC721("Warranty Token", "WRTY") {
         address owner;
         address company;
         uint256 expirationDate;
-        uint256 productId;
+        string productId;
     }
 
     // Constructor
-    constructor(address _company, uint256 _productId) {
+    constructor(address _company, string memory _productId) {
         totalSupply = 1;
         warranties[totalSupply] = Warranty(_company, _company, block.timestamp, _productId);
     }
@@ -35,7 +35,7 @@ contract WarrantyToken is ERC721("Warranty Token", "WRTY") {
     function mint(
         address _owner,
         uint256 _expirationDate,
-        uint256 _productId,
+        string memory _productId,
         string memory _tokenURI
     ) public returns (uint256) {
         totalSupply = totalSupply.add(1);

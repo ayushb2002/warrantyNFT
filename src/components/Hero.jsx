@@ -14,7 +14,7 @@ const Hero = () => {
             A simple solution for managing your warranties via NFTs.
             Buy, sell or renew your warranties easily!
           </p>
-          <a href="/register"><button className="btn btn-primary">Get Started</button></a>
+          <a href="/register"><button className="btn btn-outline btn-primary">Get Started</button></a>
         </div>
       </div>
     </div>

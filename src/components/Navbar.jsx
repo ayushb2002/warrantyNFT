@@ -8,6 +8,7 @@ const Navbar = () => {
   ReactSession.setStoreType("localStorage");
   const [loggedIn, isLoggedIn] = useState(false);
   const [address, setAddress] = useState("");
+  const [balance, setBalance] = useState(-1);
 
   const metaClick = async (e) => {
     e.preventDefault();
@@ -15,23 +16,45 @@ const Navbar = () => {
     await provider.send("eth_requestAccounts", []);
     const signer = provider.getSigner();
     setAddress(await signer.getAddress());
+    setBalance(await signer.getBalance()/(10**18));
     ReactSession.set("address", await signer.getAddress());
+    ReactSession.set("balance", await signer.getBalance()/(10**18));
     toast.success("Logged in!");
     isLoggedIn(true);
+    ReactSession.set('loggedIn', true);
+    window.location.reload();
   };
 
   const logout = (e) => {
     e.preventDefault();
     ReactSession.set("address", null);
+    ReactSession.set("balance", -1);
+    ReactSession.set("loggedIn", false);
     setAddress("");
+    setBalance(-1)
     isLoggedIn(false);
     toast.success("Logged out!");
+    window.location.reload();
   };
+
+  const loadBalance = (e) => {
+    e.preventDefault();
+    if(ReactSession.get('balance') == -1)
+    {
+      toast.error('Could not load wallet balance!');
+    }
+    else
+    {
+      setBalance(ReactSession.get('balance'));
+      toast.success(`Balance - ${balance}`);
+    }
+  }
 
   window.onload = (e) => {
     e.preventDefault();
     if (ReactSession.get("address")) {
       setAddress(ReactSession.get("address"));
+      setBalance(ReactSession.get("balance"));
       isLoggedIn(true);
     }
   };
@@ -44,7 +67,7 @@ const Navbar = () => {
         </a>
       </div>
       <div className="flex-none gap-2">
-        <div className="form-control">
+        <div className="form-control lg:shown xs:visible">
           <div className="input-group">
             <input
               type="text"
@@ -88,7 +111,7 @@ const Navbar = () => {
             {loggedIn && (
               <div>
                 <li>
-                  <a>{`${address.substring(0, 15)}`}...</a>
+                  <a onClick={loadBalance}>{`${address.substring(0, 15)}`}...</a>
                 </li>
                 <li>
                   <a onClick={logout}>Logout</a>
