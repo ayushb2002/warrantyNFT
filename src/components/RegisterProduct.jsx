@@ -5,22 +5,25 @@ import axios from "axios";
 
 const RegisterProduct = () => {
   ReactSession.setStoreType("localStorage");
-  const [company, setCompany] = useState("ABC");
-  const [product, setProduct] = useState("Washing Machine");
-  const [productId, setProductId] = useState("GM-550");
-  const [description, setDescription] = useState("Here goes...");
+  const [company, setCompany] = useState(ReactSession.get("address"));
+  const [name, setName] = useState("Washing Machine");
+  const [model, setmodel] = useState("GM-550");
+  const [description, setDescription] = useState("");
+  const [imgUrl, setImgUrl] = useState("");
   const [connected, setConnected] = useState(ReactSession.get("loggedIn"));
 
   const collectData = async (e) => {
     e.preventDefault();
     const response = await axios.post("http://localhost:5000/register", {
       type: document.querySelector("#hiddenInp").value,
-      name: product,
-      model: productId,
+      name: name,
+      model: model,
       description: description,
       manufacturer: company,
+      imgUrl: imgUrl
     });
-    if (response == true) toast.success("Data received successfully!");
+    console.log(response);
+    if (response['data'] == true) toast.success("Data received successfully!");
     else toast.error("Could not save your data!");
     setTimeout(() => {
       window.location.href = "/";
@@ -28,7 +31,7 @@ const RegisterProduct = () => {
   };
 
   return (
-    <div className="hero h-[80vh] bg-base-200">
+    <div className="hero h-[100vh] bg-base-200">
       <div className="hero-content text-center">
         <div className="max-w-lg">
           <h1 className="text-5xl font-bold mb-5">Register a product!</h1>
@@ -37,17 +40,17 @@ const RegisterProduct = () => {
             <div className="form-control my-6">
               <label className="label">
                 <span className="label-text font-bold">
-                  Name of company the product belongs to
+                  Company the product belongs to
                 </span>
               </label>
               <label className="input-group">
-                <span>Company</span>
                 <input
                   type="text"
                   placeholder={company}
-                  className="input input-bordered"
+                  className="input input-bordered w-[40vh]"
                   onChange={(e) => setCompany(e.target.value)}
                   required
+                  disabled
                 />
               </label>
             </div>
@@ -59,12 +62,11 @@ const RegisterProduct = () => {
                 </span>
               </label>
               <label className="input-group">
-                <span>Product</span>
                 <input
                   type="text"
-                  placeholder={product}
-                  className="input input-bordered"
-                  onChange={(e) => setProduct(e.target.value)}
+                  placeholder={name}
+                  className="input input-bordered w-[40vh]"
+                  onChange={(e) => setName(e.target.value)}
                   required
                 />
               </label>
@@ -77,12 +79,28 @@ const RegisterProduct = () => {
                 </span>
               </label>
               <label className="input-group">
-                <span>Product ID</span>
                 <input
                   type="text"
-                  placeholder={productId}
-                  className="input input-bordered"
-                  onChange={(e) => setProductId(e.target.value)}
+                  placeholder={model}
+                  className="input input-bordered w-[40vh]"
+                  onChange={(e) => setmodel(e.target.value)}
+                  required
+                />
+              </label>
+            </div>
+
+            <div className="form-control my-6">
+              <label className="label">
+                <span className="label-text font-bold">
+                  Url for product image
+                </span>
+              </label>
+              <label className="input-group">
+                <input
+                  type="text"
+                  placeholder={imgUrl}
+                  className="input input-bordered w-[40vh]"
+                  onChange={(e) => setImgUrl(e.target.value)}
                   required
                 />
               </label>
@@ -95,14 +113,12 @@ const RegisterProduct = () => {
                 </span>
               </label>
               <label className="input-group">
-                <span>Desc</span>
-                <input
-                  type="text"
-                  placeholder={description}
-                  className="input input-bordered"
+                <textarea
+                  value={description}
+                  className="textarea textarea-bordered h-[20vh] w-[40vh] resize-none"
                   onChange={(e) => setDescription(e.target.value)}
                   required
-                />
+                > </textarea>
               </label>
             </div>
 

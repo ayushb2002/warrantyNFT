@@ -19,7 +19,7 @@ const RegisterProduct = () => {
         name: company,
         wallet: address,
       });
-      if (response == true) toast.success("Data received successfully!");
+      if (response['data'] == true) toast.success("Data received successfully!");
       else toast.error("Could not save your data!");
       setTimeout(() => {
         window.location.href = "/";
@@ -43,7 +43,7 @@ const RegisterProduct = () => {
                 <input
                   type="text"
                   placeholder={company}
-                  className="input input-bordered"
+                  className="input input-bordered w-[40vh]"
                   onChange={(e) => setCompany(e.target.value)}
                   required
                 />
@@ -59,9 +59,10 @@ const RegisterProduct = () => {
                 <input
                   type="text"
                   value={address}
-                  className="input input-bordered"
+                  className="input input-bordered w-[40vh]"
                   onChange={(e) => setAddress(e.target.value)}
                   required
+                  disabled
                 />
               </label>
             </div>
