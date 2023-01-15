@@ -165,6 +165,9 @@ const Navbar = () => {
                   </a>
                 </li>
                 <li>
+                  <a href="/redeem">Redeem</a>
+                </li>
+                <li>
                   <a onClick={logout}>Logout</a>
                 </li>
               </div>

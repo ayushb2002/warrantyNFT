@@ -5,6 +5,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Results from "./pages/Results";
+import Redeem from "./pages/Redeem";
 
 const router = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
   {
     path: '/result/:query',
     element: <Results />
+  },
+  {
+    path: '/redeem',
+    element: <Redeem />
   }
 ]);
 

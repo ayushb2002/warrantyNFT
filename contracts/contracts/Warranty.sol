@@ -2,142 +2,105 @@
 
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract WarrantyToken is ERC721("Warranty Token", "WRTY") {
+contract WarrantyNFT is ERC721URIStorage {
+
     using SafeMath for uint256;
 
-    uint8 public decimals = 0;
-    uint256 public totalSupply;
+    constructor() ERC721("Warranty", "WRTY") {}
 
-    // Mapping from token ID to warranty details
-    mapping(uint256 => Warranty) public warranties;
-    // Mapping from token ID to token URI
-    mapping(uint256 => string) public tokenURIs;
-
-    // Struct to hold warranty details
-    struct Warranty {
+    struct Item
+    {
+        uint256 itemId;
+        uint256 expiry;
+        address manufacturer;
         address owner;
-        address company;
-        uint256 expirationDate;
-        string productId;
     }
 
-    // Constructor
-    constructor(address _company, string memory _productId) {
-        totalSupply = 1;
-        warranties[totalSupply] = Warranty(_company, _company, block.timestamp, _productId);
+    uint256 public companyCounter = 0;
+    uint256 public tokenCounter = 0;
+    mapping(uint256 => address) public companyName;
+    mapping(uint256 => Item[]) public itemStore;
+    mapping(uint256 => uint256[]) public trackRepair;
+
+    function registerCompany() public returns (uint256)
+    {
+        companyCounter += 1;
+        companyName[companyCounter] = msg.sender;
+        return companyCounter;
     }
 
-    // ERC721 functions
-    function mint(
-        address _owner,
-        uint256 _expirationDate,
-        string memory _productId,
-        string memory _tokenURI
-    ) public returns (uint256) {
-        totalSupply = totalSupply.add(1);
-        warranties[totalSupply] = Warranty(
-            _owner,
-            msg.sender,
-            _expirationDate+block.timestamp,
-            _productId
-        );
 
-    setTokenURI(totalSupply, _tokenURI);
-
-        emit Transfer(address(0), _owner, totalSupply);
-
-        return totalSupply;
+    function registerItem(uint256 _companyId, uint256 _expiry) public returns (uint256)
+    {
+        require(companyName[_companyId] == msg.sender);
+        tokenCounter += 1;
+        itemStore[tokenCounter].push(Item(tokenCounter, _expiry * 1 days, msg.sender, msg.sender));
+        return tokenCounter;
     }
 
-    function transferFrom(address _from, address _to, uint256 _tokenId) public override {
-        require(
-            _from == warranties[_tokenId].owner,
-            "Sender is not the owner of the token"
-        );
-        require(_to != address(0), "Cannot transfer to the zero address");
-        warranties[_tokenId].owner = _to;
-        emit Transfer(_from, _to, _tokenId);
+    function redeemWarranty(address _owner, uint256 _tokenId, string memory _tokenURI) public returns (uint256)
+    {
+        require(!_exists(_tokenId), "Item already exist!");
+        _safeMint(_owner, _tokenId);
+        _setTokenURI(_tokenId, _tokenURI);
+        itemStore[tokenCounter].push(Item(itemStore[_tokenId][itemStore[_tokenId].length - 1].itemId, itemStore[_tokenId][itemStore[_tokenId].length - 1].expiry + block.timestamp, itemStore[_tokenId][itemStore[_tokenId].length - 1].manufacturer, _owner));
+        return itemStore[_tokenId][itemStore[_tokenId].length - 1].expiry - block.timestamp;    // returns time left before expiry of the product
     }
 
-    function approve(address _approved, uint256 _tokenId) public override {
-        require(
-            warranties[_tokenId].owner == msg.sender,
-            "Sender is not the owner of the token"
-        );
-        warranties[_tokenId].owner = _approved;
-        emit Approval(msg.sender, _approved, _tokenId);
+    function extendWarranty(uint256 _companyId, uint256 _tokenId, uint256 _extension, address _owner) public returns (uint256)
+    {
+        require(companyName[_companyId] == msg.sender);
+        require(_exists(_tokenId));
+        require(itemStore[_tokenId][itemStore[_tokenId].length - 1].expiry >= block.timestamp);
+        require(itemStore[_tokenId][itemStore[_tokenId].length - 1].owner == _owner);
+        itemStore[_tokenId].push(Item(itemStore[_tokenId][itemStore[_tokenId].length - 1].itemId, itemStore[_tokenId][itemStore[_tokenId].length - 1].expiry + _extension * 1 days, msg.sender, _owner));
+        return itemStore[_tokenId][itemStore[_tokenId].length - 1].expiry - block.timestamp;    // returns the new time left before expiry of product
     }
 
-    function ownerOf(uint256 _tokenId) override public view returns (address) {
-        return warranties[_tokenId].owner;
+    function isExpired(uint256 _tokenId) public view returns (bool)
+    {
+        require(_exists(_tokenId), "Warranty does not exist!");
+        return itemStore[_tokenId][itemStore[_tokenId].length - 1].expiry <= block.timestamp;
     }
 
-    function balanceOf(address _owner) override public view returns (uint256) {
-        uint256 balance = 0;
-        for (uint256 i = 1; i <= totalSupply; i++) {
-            if (warranties[i].owner == _owner) {
-                balance = balance.add(1);
-            }
-        }
-        return balance;
+    function recordRepair(uint256 _tokenId, address _owner) public
+    {
+        require(!isExpired(_tokenId), "Warranty has expired!");
+        require(itemStore[_tokenId][itemStore[_tokenId].length - 1].owner == _owner);
+        trackRepair[_tokenId].push(block.timestamp);
     }
 
-    function getApproved(uint256 _tokenId) override public view returns (address) {
-        return warranties[_tokenId].owner;
+    function sellProduct(address _from, address _to, uint256 _tokenId) public 
+    {
+        require(itemStore[_tokenId][itemStore[_tokenId].length - 1].owner == _from);
+        require(_exists(_tokenId));
+        require(_ownerOf(_tokenId) == _from);
+        safeTransferFrom(_from, _to, _tokenId);
+        itemStore[_tokenId].push(Item(itemStore[_tokenId][itemStore[_tokenId].length - 1].itemId, itemStore[_tokenId][itemStore[_tokenId].length - 1].expiry, itemStore[_tokenId][itemStore[_tokenId].length - 1].manufacturer, _to));
     }
 
-    function isApprovedForAll(
-        address _operator,
-        uint256 _tokenId
-    ) public view returns (bool) {
-        return _operator == warranties[_tokenId].owner;
+    function isOwner(address _owner, uint256 _tokenId) public view returns (bool)
+    {
+        require(_exists(_tokenId));
+        return _ownerOf(_tokenId) == _owner;
     }
 
-    function setApprovalForAll(address _operator, bool _approved, uint256 _tokenId) public {
-        require(
-            warranties[_tokenId].owner == msg.sender,
-            "Sender is not the owner of the token"
-        );
-        warranties[_tokenId].owner = _approved ? _operator : address(0);
+    function timeToExpire(uint256 _tokenId) public view returns (uint256)
+    {
+        return (itemStore[_tokenId][itemStore[_tokenId].length - 1].expiry - block.timestamp)/ 1 days;
     }
 
-    function isExpired(uint256 _tokenId) public view returns (bool) {
-        return warranties[_tokenId].expirationDate <= block.timestamp;
+    function returnLatestCompanyId() public view returns (uint256)
+    {
+        return companyCounter;
     }
 
-    function extendWarranty(uint256 _tokenId, uint256 _expirationDate) public {
-        require(
-            warranties[_tokenId].company == msg.sender,
-            "Sender is not the company that issued the token"
-        );
-        warranties[_tokenId].expirationDate = _expirationDate;
-    }
-
-    function requestRefund(uint256 _tokenId) public view {
-        require(
-            warranties[_tokenId].owner == msg.sender,
-            "Sender is not the owner of the token"
-        );
-        require(isExpired(_tokenId), "Token is not expired");
-        // Perform refund or replacement process here
-    }
-
-    function recordRepair(uint256 _tokenId) public view {
-        require(
-            warranties[_tokenId].company == msg.sender,
-            "Sender is not the company that issued the token"
-        );
-        // Record repair or replacement process here
-    }
-
-    function setTokenURI(uint256 _tokenId, string memory _uri) public {
-        require(_tokenId <= totalSupply, "Token ID does not exist");
-        require(warranties[_tokenId].owner == msg.sender, "Sender is not the owner of the token");
-        tokenURIs[_tokenId] = _uri;
+    function returnLatestProductId() public view returns (uint256)
+    {
+        return tokenCounter;
     }
 
 }

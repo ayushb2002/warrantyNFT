@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { toast } from "react-hot-toast";
 import { ReactSession } from "react-client-session";
+import { registerCompany } from "../utils/interact";
 import axios from "axios";
 
-const RegisterProduct = () => {
+const RegisterCompany = () => {
   ReactSession.setStoreType("localStorage");
   const [company, setCompany] = useState("ABC");
   const [address, setAddress] = useState(ReactSession.get("address"));
@@ -14,16 +15,28 @@ const RegisterProduct = () => {
     if (company == "ABC" || address == "")
       toast.error("Invalid data submitted!");
     else {
-      const response = await axios.post("http://localhost:5000/register", {
+      var companyId = await registerCompany();
+      if(companyId)
+      {
+        companyId = companyId.toNumber();
+        const response = await axios.post("http://localhost:5000/register", {
         type: document.querySelector("#hiddenInp").value,
+        companyId: companyId,
         name: company,
         wallet: address,
       });
-      if (response['data'] == true) toast.success("Data received successfully!");
+      if (response["data"] == true)
+        toast.success(`Data received successfully! Company ID: ${companyId}`);
       else toast.error("Could not save your data!");
       setTimeout(() => {
-        window.location.href = "/";
+        window.location.href = "/register";
       }, 1000);
+      }
+      else
+      {
+        console.log(companyId);
+        toast.error("Could not register your company!");
+      }
     }
   };
 
@@ -60,7 +73,6 @@ const RegisterProduct = () => {
                   type="text"
                   value={address}
                   className="input input-bordered w-[40vh]"
-                  onChange={(e) => setAddress(e.target.value)}
                   required
                   disabled
                 />
@@ -83,4 +95,4 @@ const RegisterProduct = () => {
   );
 };
 
-export default RegisterProduct;
+export default RegisterCompany;
