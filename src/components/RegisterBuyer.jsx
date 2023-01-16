@@ -1,10 +1,10 @@
 import React, { useLayoutEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { ReactSession } from "react-client-session";
-import { registerCompany } from "../utils/interact";
 import axios from "axios";
 
 const RegisterBuyer = () => {
+  ReactSession.setStoreType("localStorage");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState(ReactSession.get("address"));
@@ -39,7 +39,7 @@ const RegisterBuyer = () => {
     <div className="hero h-[80vh] bg-base-200">
       <div className="hero-content text-center">
         <div className="max-w-lg">
-          <h1 className="text-5xl font-bold mb-5 w-100">Register buyer!</h1>
+          <h1 className="text-5xl font-bold mb-5 w-100">Register as buyer!</h1>
           {!display && (
             <form className="mt-10" onSubmit={collectData} id="registerForm">
               <input type="hidden" name="hidden" value="buyer" id="hiddenInp" />
@@ -96,7 +96,7 @@ const RegisterBuyer = () => {
                   type="submit"
                   disabled={!connected ? true : false}
                 >
-                  Register as buyer
+                  Register buyer
                 </button>
               </div>
             </form>

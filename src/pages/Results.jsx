@@ -15,24 +15,29 @@ const Results = () => {
 
   const recordBuyerAddress = async (e, itemId) => {
     e.preventDefault();
-    const buyerEmail = prompt("Enter buyer's email address!");
-    const response = await axios.post(`http://localhost:5000/bookItem`, {
-      email: buyerEmail,
-      tokenId: itemId
-    });
+    var buyerEmail = "";
+    try {
+      buyerEmail = prompt("Enter buyer's email address!");
+      if (buyerEmail == "" || buyerEmail == null) return;
+      const response = await axios.post(`http://localhost:5000/bookItem`, {
+        email: buyerEmail,
+        tokenId: itemId,
+      });
 
-    console.log(response.data);
+      console.log(response.data);
 
-    if(response.data == true)
-      toast.success('Sent to buyer successfully!');
-    else
-      toast.error('Could not issue warranty!');
+      if (response.data == true) toast.success("Sent to buyer successfully!");
+      else toast.error("Could not issue warranty!");
 
-    setTimeout(() => {
-      window.location.href = '/';
-    }, 2000);
-
-  }
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 2000);
+    } catch (err) {
+      console.log(err);
+      toast.error("No data received!");
+      return;
+    }
+  };
 
   useLayoutEffect(() => {
     (async () => {
@@ -75,7 +80,7 @@ const Results = () => {
                       {item.name} (ID - {item.itemId})
                     </h2>
                     <div className="flex justify-start">
-                    <div className="badge badge-secondary w-[10vh] mx-2">
+                      <div className="badge badge-secondary w-[10vh] mx-2">
                         {item.model}
                       </div>
                       <div className="badge badge-info mx-2">

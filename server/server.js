@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const Company = require('./models/company');
 const Product = require('./models/product');
 const Buyer = require('./models/buyer');
+const Retailer = require('./models/retailer');
 const cors = require('cors');
 const {
     handler
@@ -86,6 +87,22 @@ app.post('/register', (req, res) => {
             res.send(false);
             return;
         }
+    } else if (type == "retailer") {
+        const retailer = new Retailer({
+            name: req.body.name.toString(),
+            wallet: req.body.wallet.toString(),
+            company: req.body.companyId
+        })
+
+        retailer.save((err, result) => {
+            if (err) {
+                console.log(err);
+                res.send(false);
+                return;
+            }
+        });
+        res.send(true);
+        return;
     } else {
         res.send(false);
         return;
@@ -113,20 +130,23 @@ app.get('/product/:company', (req, res, next) => {
     res.end();
 });
 
-app.param('wallet', async (req, res, next, wallet) => {
-    const buyer = await Buyer.findOne({'wallet': wallet});
+app.param('buyerWallet', async (req, res, next, wallet) => {
+    const buyer = await Buyer.findOne({
+        'wallet': wallet
+    });
     res.send(buyer);
     next();
 });
 
-app.get('/users/:wallet', (req, res, next) => {
+app.get('/users/:buyerWallet', (req, res, next) => {
     res.end();
 });
 
 app.post('/bookItem', async (req, res) => {
-    const buyer = await Buyer.findOne({'email': req.body.email.toString()});
-    if(!buyer)
-    {
+    const buyer = await Buyer.findOne({
+        'email': req.body.email.toString()
+    });
+    if (!buyer) {
         res.send(false);
         return;
     }
