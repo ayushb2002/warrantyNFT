@@ -10,32 +10,43 @@ const Results = () => {
   ReactSession.setStoreType("localStorage");
   const [result, setResult] = useState([]);
   const [wrong, setWrong] = useState(true);
+  const [itemId, setItemId] = useState(0);
+  const [address, setAddress] = useState(ReactSession.get('address'));
   const [connected, setConnected] = useState(ReactSession.get("loggedIn"));
   const { query } = useParams();
 
-  const recordBuyerAddress = async (e, itemId) => {
+  const sendTokenToBuyer = async (e) => {
     e.preventDefault();
-    var buyerEmail = "";
-    try {
-      buyerEmail = prompt("Enter buyer's email address!");
-      if (buyerEmail == "" || buyerEmail == null) return;
-      const response = await axios.post(`http://localhost:5000/bookItem`, {
-        email: buyerEmail,
-        tokenId: itemId,
-      });
-
-      console.log(response.data);
-
-      if (response.data == true) toast.success("Sent to buyer successfully!");
-      else toast.error("Could not issue warranty!");
-
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 2000);
-    } catch (err) {
-      console.log(err);
-      toast.error("No data received!");
+    const buyerEmail = document.querySelector("#buyerEmail").value;
+    if (buyerEmail == "" || buyerEmail == null) {
+      toast.error("Email address cannot be empty!");
       return;
+    } else {
+      try {
+        const isRetailer = await axios.get(`http://localhost:5000/isRetailer/${address}`);
+        console.log(isRetailer.data);
+        if(!isRetailer.data)
+        {
+          toast.error('The issuer must be a retailer!');
+          return;
+        }
+
+        const response = await axios.post(`http://localhost:5000/bookItem`, {
+          email: buyerEmail,
+          tokenId: itemId,
+        });
+
+        if (response.data == true) toast.success("Sent to buyer successfully!");
+        else toast.error("Could not issue warranty!");
+
+        // setTimeout(() => {
+        //   window.location.href = "/";
+        // }, 2000);
+      } catch (err) {
+        console.log(err);
+        toast.error("No data received!");
+        return;
+      }
     }
   };
 
@@ -76,17 +87,15 @@ const Results = () => {
                     />
                   </figure>
                   <div className="card-body">
-                    <h2 className="card-title">
-                      {item.name} (ID - {item.itemId})
-                    </h2>
+                    <h2 className="card-title mb-2 text-3xl">{item.name}</h2>
                     <div className="flex justify-start">
-                      <div className="badge badge-secondary w-[10vh] mx-2">
+                      <div className="badge badge-secondary w-[15vh] text-center mx-2">
                         {item.model}
                       </div>
-                      <div className="badge badge-info mx-2">
+                      <div className="badge badge-info w-[15vh] text-center mx-2">
                         {item.manufacturer[0].name}{" "}
                       </div>
-                      <div className="badge badge-accent mx-2">
+                      <div className="badge badge-accent w-[15vh] text-center mx-2">
                         <p>{item.expiry} days</p>
                       </div>
                     </div>
@@ -95,9 +104,14 @@ const Results = () => {
                         <button
                           className="btn btn-outline btn-warning"
                           disabled={!connected ? true : false}
-                          onClick={(e) => recordBuyerAddress(e, item.itemId)}
                         >
-                          Issue warranty!
+                          <label
+                            htmlFor="my-modal"
+                            className="text-[0.8rem]"
+                            onClick={() => setItemId(item.itemId)}
+                          >
+                            Issue warranty!
+                          </label>
                         </button>
                       </div>
                     </div>
@@ -107,6 +121,38 @@ const Results = () => {
             })}
           </div>
         )}
+      </div>
+      <input type="checkbox" id="my-modal" className="modal-toggle" />
+      <div className="modal">
+        <div className="modal-box relative">
+          <label
+            htmlFor="my-modal"
+            className="btn btn-sm btn-circle absolute right-2 top-2"
+          >
+            ✕
+          </label>
+          <h3 className="font-bold text-lg">Fill in the details -</h3>
+          <div>
+            <div className="form-control my-5">
+              <label htmlFor="buyerEmail">Buyer's email address</label>
+              <input
+                type="text"
+                id="buyerEmail"
+                name="buyerEmail"
+                className="input input-bordered"
+              />
+            </div>
+          </div>
+          <div className="modal-action">
+            <label
+              htmlFor="my-modal"
+              className="btn btn-outline"
+              onClick={sendTokenToBuyer}
+            >
+              Finish!
+            </label>
+          </div>
+        </div>
       </div>
       <Footer />
     </section>

@@ -39,6 +39,6 @@ export const registerCompany = async () => {
     catch(e)
     {
         console.log(e);
-        return falsel
+        return false;
     }
 };

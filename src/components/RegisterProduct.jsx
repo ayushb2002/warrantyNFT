@@ -5,7 +5,6 @@ import axios from "axios";
 import { registerProductToBlockchain } from "../utils/interact";
 
 const RegisterProduct = () => {
-
   ReactSession.setStoreType("localStorage");
   const [company, setCompany] = useState(ReactSession.get("address"));
   const [companyId, setCompanyId] = useState("0");
@@ -17,30 +16,32 @@ const RegisterProduct = () => {
 
   const collectData = async (e) => {
     e.preventDefault();
-
-    var itemId = await registerProductToBlockchain(companyId, expiry);
-    if(itemId)
-    {
-      itemId = itemId.toNumber();
-      const response = await axios.post("http://localhost:5000/register", {
-      type: document.querySelector("#hiddenInp").value,
-      itemId: itemId,
-      name: name,
-      model: model,
-      expiry: expiry,
-      manufacturer: company,
-      imgUrl: imgUrl,
-    });
-    console.log(response);
-    if (response["data"] == true) toast.success("Data received successfully!");
-    else toast.error("Could not save your data!");
-    setTimeout(() => {
-      window.location.href = "/register";
-    }, 1000);
-    }
-    else
-    {
-      toast.error("Could not create the item!");
+    try {
+      var itemId = await registerProductToBlockchain(companyId, expiry);
+      if (itemId) {
+        itemId = itemId.toNumber();
+        const response = await axios.post("http://localhost:5000/register", {
+          type: document.querySelector("#hiddenInp").value,
+          itemId: itemId,
+          name: name,
+          model: model,
+          expiry: expiry,
+          manufacturer: company,
+          imgUrl: imgUrl,
+        });
+        console.log(response);
+        if (response["data"] == true)
+          toast.success("Data received successfully!");
+        else toast.error("Could not save your data!");
+        setTimeout(() => {
+          window.location.href = "/register";
+        }, 1000);
+      } else {
+        toast.error("Could not create the item!");
+      }
+    } catch (err) {
+      console.log(err);
+      toast.error('Operation failed!');
     }
   };
 

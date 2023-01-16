@@ -16,7 +16,7 @@ app.use(express.json());
 
 main().catch(err => console.log(err));
 
-app.post('/register', (req, res) => {
+app.post('/register', async (req, res) => {
     var type = req.body.type;
     if (type == "product") {
         const query = Company.findOne({
@@ -88,11 +88,38 @@ app.post('/register', (req, res) => {
             return;
         }
     } else if (type == "retailer") {
+
+        const verify = await Company.findOne({
+            'wallet': req.body.companyAddress.toString()
+        });
+        if (!verify || verify == null) {
+            res.send(false);
+            return;
+        }
+
+        if (verify.companyId != req.body.companyId) {
+            res.send(false);
+            return;
+        }
+
+        const preExist = await Retailer.find({
+            'wallet': req.body.wallet.toString()
+        });
+        
+        for(var i=0; i<preExist.length; i++)
+        {
+            if(preExist[i].company == req.body.companyId)
+            {
+                res.send(false);
+                return;
+            }
+        }
+
         const retailer = new Retailer({
             name: req.body.name.toString(),
             wallet: req.body.wallet.toString(),
             company: req.body.companyId
-        })
+        });
 
         retailer.save((err, result) => {
             if (err) {
@@ -155,6 +182,38 @@ app.post('/bookItem', async (req, res) => {
     res.send(true);
     return;
 });
+
+app.param('companyWallet', async (req, res, next, companyWallet) => {
+    const company = await Company.findOne({
+        'wallet': companyWallet.toString()
+    });
+    if (!company || company == null) {
+        res.send(false);
+        return;
+    }
+    res.send(true);
+    next();
+})
+
+app.get('/isCompany/:companyWallet', (req, res, next) => {
+    res.end();
+})
+
+app.param('retailerWallet', async (req, res, next, retailerWallet) => {
+    const retailer = await Retailer.find({
+        'wallet': retailerWallet.toString()
+    });
+    if (!retailer || retailer == null || retailer == []) {
+        res.send(false);
+        return;
+    }
+    res.send(true);
+    next();
+})
+
+app.get('/isRetailer/:retailerWallet', (req, res, next) => {
+    res.end();
+})
 
 async function main() {
     await mongoose.connect(process.env.MONGO_URI);

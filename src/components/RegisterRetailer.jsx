@@ -5,26 +5,42 @@ import { registerCompany } from "../utils/interact";
 import axios from "axios";
 
 const RegisterRetailer = () => {
-    ReactSession.setStoreType("localStorage");
+  ReactSession.setStoreType("localStorage");
   const [name, setName] = useState("");
   const [address, setAddress] = useState(ReactSession.get("address"));
+  const [retailerAddress, setRetailerAddress] = useState("0x...");
   const [companyId, setCompanyId] = useState("0");
   const [connected, setConnected] = useState(ReactSession.get("loggedIn"));
 
   const collectData = async (e) => {
     e.preventDefault();
 
-    const response = await axios.post("http://localhost:5000/register", {
-      type: document.querySelector("#hiddenInp").value,
-      name: name,
-      wallet: address,
-      company: int(companyId),
-    });
-    if (response["data"] == true) toast.success(`Data received successfully!`);
-    else toast.error("Could not save your data!");
-    setTimeout(() => {
-      window.location.href = "/register";
-    }, 1000);
+    try {
+      const isCompany = await axios.get(
+        `http://localhost:5000/isCompany/${address}`
+      );
+      if (!isCompany.data) {
+        toast.error("Only the company can register the retailer!");
+        return;
+      }
+
+      const response = await axios.post("http://localhost:5000/register", {
+        type: document.querySelector("#hiddenInp").value,
+        name: name,
+        wallet: retailerAddress,
+        companyId: parseInt(companyId),
+        companyAddress: address
+      });
+      if (response["data"] == true)
+        toast.success(`Data received successfully!`);
+      else toast.error("Could not save your data!");
+      setTimeout(() => {
+        window.location.href = "/register";
+      }, 1000);
+    } catch (err) {
+      console.log(err);
+      toast.error('Could not register the retailer!');
+    }
   };
 
   return (
@@ -45,16 +61,15 @@ const RegisterRetailer = () => {
 
             <div className="form-control my-6">
               <label className="label">
-                <span className="label-text font-bold">Wallet Address</span>
+                <span className="label-text font-bold">Retailer's Wallet Address</span>
               </label>
               <label className="input-group">
-                <span>Metamask</span>
                 <input
                   type="text"
-                  value={address}
+                  placeholder={retailerAddress}
                   className="input input-bordered w-[40vh]"
+                  onChange={(e) => setRetailerAddress(e.target.value)}
                   required
-                  disabled
                 />
               </label>
             </div>
