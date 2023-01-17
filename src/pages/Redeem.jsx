@@ -39,7 +39,7 @@ const Redeem = () => {
               <ul className="menu bg-base-100 w-56">
                 <li>
                   <a className="active" onClick={(e) => setViewFn(e, 0)}>
-                    Redeem warranties
+                    Redeem warranty
                   </a>
                 </li>
                 <li>
@@ -50,7 +50,7 @@ const Redeem = () => {
                 </li>
               </ul>
             </div>
-            <div className="px-10">
+            <div className="px-10 w-max">
               {view == 0 && <div>
                 <RedeemWarranties />
                 </div>}

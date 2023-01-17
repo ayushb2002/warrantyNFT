@@ -7,9 +7,6 @@ const Product = require('./models/product');
 const Buyer = require('./models/buyer');
 const Retailer = require('./models/retailer');
 const cors = require('cors');
-const {
-    handler
-} = require("daisyui");
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -203,7 +200,7 @@ app.param('retailerWallet', async (req, res, next, retailerWallet) => {
     const retailer = await Retailer.find({
         'wallet': retailerWallet.toString()
     });
-    if (!retailer || retailer == null || retailer == []) {
+    if (!retailer || retailer == null || retailer == [] || retailer.length <=0) {
         res.send(false);
         return;
     }
@@ -212,6 +209,21 @@ app.param('retailerWallet', async (req, res, next, retailerWallet) => {
 })
 
 app.get('/isRetailer/:retailerWallet', (req, res, next) => {
+    res.end();
+})
+
+app.param('itemId', async (req, res, next, itemId) => {
+    const product = Product.findOne({'itemId': itemId});
+    if(!product)
+    {
+        res.send(false);
+        return;
+    }
+    res.send(product);
+    next();
+})
+
+app.get('/item/:itemId', (req, res, next) => {
     res.end();
 })
 

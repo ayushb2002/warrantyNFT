@@ -24,7 +24,6 @@ const Results = () => {
     } else {
       try {
         const isRetailer = await axios.get(`http://localhost:5000/isRetailer/${address}`);
-        console.log(isRetailer.data);
         if(!isRetailer.data)
         {
           toast.error('The issuer must be a retailer!');
@@ -39,9 +38,9 @@ const Results = () => {
         if (response.data == true) toast.success("Sent to buyer successfully!");
         else toast.error("Could not issue warranty!");
 
-        // setTimeout(() => {
-        //   window.location.href = "/";
-        // }, 2000);
+        setTimeout(() => {
+          window.location.href = `/result/${query}`;
+        }, 2000);
       } catch (err) {
         console.log(err);
         toast.error("No data received!");
