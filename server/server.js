@@ -213,7 +213,7 @@ app.get('/isRetailer/:retailerWallet', (req, res, next) => {
 })
 
 app.param('itemId', async (req, res, next, itemId) => {
-    const product = Product.findOne({'itemId': itemId});
+    const product = await Product.findOne({'itemId': itemId});
     if(!product)
     {
         res.send(false);
@@ -225,6 +225,20 @@ app.param('itemId', async (req, res, next, itemId) => {
 
 app.get('/item/:itemId', (req, res, next) => {
     res.end();
+})
+
+app.post('/saveNFT', async (req, res) => {
+    const buyer = await Buyer.findOne({'wallet': req.body.wallet.toString()});
+    if(!buyer)
+    {
+        res.send(false);
+        return;
+    }
+    buyer.redeemedTokenId.push(req.body.tokenId);
+    buyer.ownedTokenId.pop(req.body.key);
+    buyer.save();
+    res.send(true);
+    return;
 })
 
 async function main() {
