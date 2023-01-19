@@ -17,7 +17,10 @@ const Navbar = () => {
   const formatResult = (item) => {
     return (
       <>
-        <span className="display-block text-left bg-transparent text-slate-100 hover:text-slate-500" onClick={(e) => searchCompany(e, item.name)}>
+        <span
+          className="display-block text-left bg-transparent text-slate-100 hover:text-slate-500"
+          onClick={(e) => searchCompany(e, item.name)}
+        >
           {item.name}
         </span>
       </>
@@ -62,31 +65,41 @@ const Navbar = () => {
   };
 
   useLayoutEffect(() => {
-    ;(async () => {
+    (async () => {
       var searchArray = [];
-    for(var i=0;i<JSON.parse(JSON.stringify(await axios.get("http://localhost:5000/companies")))['data'].length; i++)
-    {
-      searchArray.push(JSON.parse(JSON.stringify(await axios.get("http://localhost:5000/companies")))['data'][i]);
-    }
-    setItems(searchArray);
-    if (ReactSession.get("address")) {
-      setAddress(ReactSession.get("address"));
-      setBalance(ReactSession.get("balance"));
-      isLoggedIn(true);
-    }
+      for (
+        var i = 0;
+        i <
+        JSON.parse(
+          JSON.stringify(await axios.get("http://localhost:5000/companies"))
+        )["data"].length;
+        i++
+      ) {
+        searchArray.push(
+          JSON.parse(
+            JSON.stringify(await axios.get("http://localhost:5000/companies"))
+          )["data"][i]
+        );
+      }
+      setItems(searchArray);
+      if (ReactSession.get("address")) {
+        setAddress(ReactSession.get("address"));
+        setBalance(ReactSession.get("balance"));
+        isLoggedIn(true);
+      }
     })();
-  },[])
+  }, []);
 
   const searchCompany = (e, item) => {
     e.preventDefault();
     setQuery(item);
     setTimeout(() => {}, 1000);
     window.location.href = `/result/${query}`;
-  }
+  };
 
   const handleOnSearch = (string, results) => {
     setQuery(string);
-  }
+  };
 
   return (
     <div className="navbar bg-base-200">
@@ -156,7 +169,6 @@ const Navbar = () => {
                 <a onClick={metaClick}>Connect Wallet</a>
               </li>
             )}
-
             {loggedIn && (
               <div>
                 <li>
@@ -169,6 +181,9 @@ const Navbar = () => {
                 </li>
                 <li>
                   <a href="/sellProduct">Sell product</a>
+                </li>
+                <li>
+                  <a href="/register">Register</a>
                 </li>
                 <li>
                   <a onClick={logout}>Logout</a>

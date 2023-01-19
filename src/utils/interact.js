@@ -117,9 +117,48 @@ export const issueRepairRequest = async (_tokenId, _owner) => {
 export const sellNFT = async (_from, _to, _tokenId) => {
     const contract = executeFunction();
     try{
-        const txn = await contract.sellNFT(_from, _to, _tokenId);
+        const txn = await contract.sellProduct(_from, _to, _tokenId);
         await txn.wait(1);
         return true;
+    }catch(err)
+    {
+        console.log(err);
+        return false;
+    }
+}
+
+export const returnItemIdFromTokenId = async (_tokenId) => {
+    const contract = executeFunction();
+    try
+    {
+        const itemId = await contract.returnItemIdByTokenId(_tokenId);
+        return itemId;
+    }catch(err)
+    {
+        console.log(err);
+        return false;
+    }
+}
+
+export const extendWarranty = async (_tokenId, _extension, _owner) => {
+    const contract = executeFunction();
+    try {
+        const txn = await contract.extendWarranty(_tokenId, _extension, _owner);
+        await txn.wait(1);
+        return true;
+    }catch(err)
+    {
+        console.log(err);
+        return false;
+    }
+}
+
+export const returnRepairs = async (_tokenId) => {
+    const contract = executeFunction();
+    try
+    {
+        const reports = await contract.returnTrackRecord(_tokenId);
+        return reports;
     }catch(err)
     {
         console.log(err);

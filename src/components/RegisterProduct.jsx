@@ -146,6 +146,7 @@ const RegisterProduct = () => {
                   placeholder={expiry}
                   className="input input-bordered w-[40vh]"
                   onChange={(e) => setExpiry(e.target.value)}
+                  min="0"
                   required
                 />
               </label>

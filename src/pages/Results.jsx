@@ -11,7 +11,7 @@ const Results = () => {
   const [result, setResult] = useState([]);
   const [wrong, setWrong] = useState(true);
   const [itemId, setItemId] = useState(0);
-  const [address, setAddress] = useState(ReactSession.get('address'));
+  const [address, setAddress] = useState(ReactSession.get("address"));
   const [connected, setConnected] = useState(ReactSession.get("loggedIn"));
   const { query } = useParams();
 
@@ -23,10 +23,11 @@ const Results = () => {
       return;
     } else {
       try {
-        const isRetailer = await axios.get(`http://localhost:5000/isRetailer/${address}`);
-        if(!isRetailer.data)
-        {
-          toast.error('The issuer must be a retailer!');
+        const isRetailer = await axios.get(
+          `http://localhost:5000/isRetailer/${address}`
+        );
+        if (!isRetailer.data) {
+          toast.error("The issuer must be a retailer!");
           return;
         }
 
@@ -40,7 +41,7 @@ const Results = () => {
 
         setTimeout(() => {
           window.location.href = `/result/${query}`;
-        }, 2000);
+        }, 1000);
       } catch (err) {
         console.log(err);
         toast.error("No data received!");

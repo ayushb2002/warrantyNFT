@@ -59,16 +59,6 @@ contract WarrantyNFT is ERC721URIStorage {
         return tokenCounter;
     }
 
-    function extendWarranty(uint256 _companyId, uint256 _tokenId, uint256 _extension, address _owner) public returns (uint256)
-    {
-        require(companyName[_companyId] == msg.sender);
-        require(_exists(_tokenId));
-        require(trackBuyer[_tokenId][trackBuyer[_tokenId].length - 1].dateOfExpiry >= (block.timestamp * 1 days));
-        require(trackBuyer[_tokenId][trackBuyer[_tokenId].length - 1].owner == _owner);
-        trackBuyer[_tokenId].push(Buyer(trackBuyer[_tokenId][trackBuyer[_tokenId].length - 1].itemId, _owner, trackBuyer[_tokenId][trackBuyer[_tokenId].length - 1].dateOfExpiry + _extension * 1 days));
-        return trackBuyer[_tokenId][trackBuyer[_tokenId].length - 1].dateOfExpiry - (block.timestamp * 1 days);    // returns the new time left before expiry of product
-    }
-
     function isExpired(uint256 _tokenId) public view returns (bool)
     {
         require(_exists(_tokenId), "Warranty does not exist!");
@@ -79,7 +69,7 @@ contract WarrantyNFT is ERC721URIStorage {
     {
         require(!isExpired(_tokenId), "Warranty has expired!");
         require(trackBuyer[_tokenId][trackBuyer[_tokenId].length - 1].owner == _owner);
-        trackRepair[_tokenId].push(block.timestamp * 1 days);
+        trackRepair[_tokenId].push(block.timestamp / 1 days);
     }
 
     function sellProduct(address _from, address _to, uint256 _tokenId) public 
@@ -122,4 +112,22 @@ contract WarrantyNFT is ERC721URIStorage {
         return tokenCounter;
     }
 
+    function returnItemIdByTokenId(uint256 _tokenId) public view returns (uint256)
+    {
+        return trackBuyer[_tokenId][trackBuyer[_tokenId].length -1].itemId;
+    }
+
+    function extendWarranty(uint256 _tokenId, uint256 _extension, address _owner) payable public returns (uint256)
+    {
+        require(_exists(_tokenId), "Token does not exist!");
+        require(!isExpired(_tokenId), "Token has already expired!");
+        require(isOwner(_owner, _tokenId), "The address does not belong to owner of the token!");
+        trackBuyer[_tokenId].push(Buyer(trackBuyer[_tokenId][trackBuyer[_tokenId].length - 1].itemId, _owner, trackBuyer[_tokenId][trackBuyer[_tokenId].length - 1].dateOfExpiry + _extension));
+        return timeToExpire(_tokenId);    // returns the new time left before expiry of product
+    }
+
+    function returnTrackRecord(uint256 _tokenId) public view returns (uint256[] memory)
+    {
+        return trackRepair[_tokenId];
+    }
 }

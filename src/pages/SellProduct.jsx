@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState, useLayoutEffect } from "react";
+import React, { useState } from "react";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import { ReactSession } from "react-client-session";
@@ -13,15 +13,31 @@ const SellProduct = () => {
   const [connected, setConnected] = useState(ReactSession.get("loggedIn"));
   const [tokenId, setTokenId] = useState(0);
 
-  const collectData = (e) => {
+  const collectData = async (e) => {
     e.preventDefault();
-    // Database updation!
-    const txn = sellNFT(address, buyerAddress, tokenId);
+    const response = await axios.post(`http://localhost:5000/soldNFT`,{
+    sellerWallet: address,
+    buyerWallet: buyerAddress,
+    tokenId: parseInt(tokenId)
+    });
+
+    if(!response.data)
+    {
+      toast.error('Could not register the transfer!');
+      return;
+    }
+
+    const txn = await sellNFT(address, buyerAddress, tokenId);
     if(!txn)
     {
         toast.error('Token ID does not belong to the user or the address of buyer is incorrect!');
         return;
     }
+
+    toast.success(`Transferred the NFT to ${buyerAddress.substring(0, 7)}... successfully!`);
+    setTimeout(() => {
+      window.location.href = '/sellProduct';
+    }, 1000);
   }
   return (
     <section>

@@ -103,11 +103,9 @@ app.post('/register', async (req, res) => {
         const preExist = await Retailer.find({
             'wallet': req.body.wallet.toString()
         });
-        
-        for(var i=0; i<preExist.length; i++)
-        {
-            if(preExist[i].company == req.body.companyId)
-            {
+
+        for (var i = 0; i < preExist.length; i++) {
+            if (preExist[i].company == req.body.companyId) {
                 res.send(false);
                 return;
             }
@@ -201,7 +199,7 @@ app.param('retailerWallet', async (req, res, next, retailerWallet) => {
     const retailer = await Retailer.find({
         'wallet': retailerWallet.toString()
     });
-    if (!retailer || retailer == null || retailer == [] || retailer.length <=0) {
+    if (!retailer || retailer == null || retailer == [] || retailer.length <= 0) {
         res.send(false);
         return;
     }
@@ -214,9 +212,10 @@ app.get('/isRetailer/:retailerWallet', (req, res, next) => {
 });
 
 app.param('itemId', async (req, res, next, itemId) => {
-    const product = await Product.findOne({'itemId': itemId});
-    if(!product)
-    {
+    const product = await Product.findOne({
+        'itemId': itemId
+    });
+    if (!product) {
         res.send(false);
         return;
     }
@@ -229,9 +228,10 @@ app.get('/item/:itemId', (req, res, next) => {
 });
 
 app.post('/saveNFT', async (req, res) => {
-    const buyer = await Buyer.findOne({'wallet': req.body.wallet.toString()});
-    if(!buyer)
-    {
+    const buyer = await Buyer.findOne({
+        'wallet': req.body.wallet.toString()
+    });
+    if (!buyer) {
         res.send(false);
         return;
     }
@@ -243,16 +243,58 @@ app.post('/saveNFT', async (req, res) => {
 });
 
 app.post('/extendWarranty', async (req, res) => {
-    const expiry = new Expiry({
-        companyId: req.body.companyId,
-        tokenId: req.body.tokenId,
-        extension: req.body.extension,
-        payment: req.body.payment
-    });
+    try {
+        const itemId = req.body.itemId;
+        const product = await Product.findOne({
+            'itemId': itemId
+        }).populate('manufacturer');
+        if (!product) {
+            res.send(false);
+            return;
+        }
+        const _companyId = product.manufacturer[0].companyId;
+        const expiry = new Expiry({
+            companyId: _companyId,
+            tokenId: req.body.tokenId,
+            extension: req.body.extension,
+            payment: req.body.payment
+        });
 
-    expiry.save();
-    res.send(true);
-    return;
+        expiry.save();
+        res.send(true);
+        return;
+    } catch (err) {
+        console.log(err);
+        res.send(false);
+        return;
+    }
+});
+
+app.post('/soldNFT', async (req, res) => {
+    const seller = await Buyer.findOne({
+        'wallet': req.body.sellerWallet.toString()
+    });
+    const buyer = await Buyer.findOne({
+        'wallet': req.body.buyerWallet.toString()
+    });
+    if (!buyer || !seller) {
+        res.send(false);
+        return;
+    }
+
+    try {
+        seller.redeemedTokenId.pop(req.body.tokenId);
+        buyer.redeemedTokenId.push(req.body.tokenId);
+        seller.save();
+        buyer.save();
+        res.send(true);
+        return;
+    } catch (err) {
+        console.log(err);
+        res.send(false);
+        return;
+    }
+
 });
 
 async function main() {
