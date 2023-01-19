@@ -5,11 +5,7 @@ import {
 
 import { pinJSONToIPFS } from './pinata';
 
-// const alchemyKey = process.env.REACT_APP_ALCHEMY_KEY;
-// const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
-// const web3 = createAlchemyWeb3(alchemyKey);
-
-const contractAddress = "0x3258E5b5bc4A442915853338fC925E0BD4976d8C";
+const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
 
 export const executeFunction = () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -85,6 +81,45 @@ export const redeemWarranty = async (_owner, _itemId, _tokenURI) => {
         await txn.wait(1);
         const tokenId = await contract.returnLatestTokenId();
         return tokenId;
+    }catch(err)
+    {
+        console.log(err);
+        return false;
+    }
+}
+
+export const timeToExpire = async (_tokenId) => {
+    const contract = executeFunction();
+    try
+    {
+        const timeLeft = await contract.timeToExpire(_tokenId);
+        return timeLeft;
+    }catch(err)
+    {
+        console.log(err);
+        return false;
+    }
+}
+
+export const issueRepairRequest = async (_tokenId, _owner) => {
+    const contract = executeFunction();
+    try{
+        const repair = await contract.recordRepair(_tokenId, _owner);
+        await repair.wait(1);
+        return true;
+    }catch(err)
+    {
+        console.log(err);
+        return false;
+    }
+}
+
+export const sellNFT = async (_from, _to, _tokenId) => {
+    const contract = executeFunction();
+    try{
+        const txn = await contract.sellNFT(_from, _to, _tokenId);
+        await txn.wait(1);
+        return true;
     }catch(err)
     {
         console.log(err);

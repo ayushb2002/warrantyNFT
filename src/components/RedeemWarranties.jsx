@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useState, useLayoutEffect } from "react";
 import { ReactSession } from "react-client-session";
 import { toast } from "react-hot-toast";
-import { mintNFT, redeemWarranty } from "../utils/interact";
+import { mintNFT, redeemWarranty, timeToExpire } from "../utils/interact";
 
 const RedeemWarranties = () => {
   ReactSession.setStoreType("localStorage");
@@ -25,7 +25,7 @@ const RedeemWarranties = () => {
       setOwned(Object.keys(data1).length);
 
       var htmlData1 = []
-      for( var [key1, value1] of Object.entries(data1))
+      for( const [key1, value1] of Object.entries(data1))
       {
         htmlData1.push(
           <tr key={key1}>
@@ -45,13 +45,14 @@ const RedeemWarranties = () => {
       }
 
       var htmlData = []
-      for( var [key, value] of Object.entries(data))
+      for( const [key, value] of Object.entries(data))
       {
         htmlData.push(
           <tr key={key}>
             <th>{parseInt(key)+1}</th>
             <td>{value}</td>
-            <td><a href={`https://testnet.rarible.com/token/polygon/0x3258e5b5bc4a442915853338fc925e0bd4976d8c:${value}`} target="_blank"><button className="badge badge-error">View NFT!</button></a></td>
+            <td><a href={`https://testnet.rarible.com/token/polygon/${import.meta.env.VITE_CONTRACT_ADDRESS}:${value}`} target="_blank"><button className="badge badge-error">View NFT!</button></a></td>
+            <td><button className="badge badge-warning" onClick={(e) => viewWarranty(e, value)}>View</button></td>
           </tr>
         )
       }
@@ -107,6 +108,22 @@ const RedeemWarranties = () => {
     return;
   }
 
+  const viewWarranty = async (e, tokenId) => {
+    e.preventDefault();
+    const timeLeft = await timeToExpire(tokenId);
+    if(timeLeft)
+    {
+      toast.success(`Days left - ${timeLeft}`);
+      return;
+    }
+    else
+    {
+      console.log(timeLeft);
+      toast.error('Warranty expired or does not exist!');
+      return;
+    }
+  }
+
   return (
     <div>
     {connected && (
@@ -141,7 +158,8 @@ const RedeemWarranties = () => {
             <tr>
               <th>#</th>
               <th>Token ID</th>
-              <th>Action</th>
+              <th>NFT</th>
+              <th>Warranty</th>
             </tr>
           </thead>
           <tbody>

@@ -27,26 +27,27 @@ const Redeem = () => {
   const setViewFn = (e, i) => {
     e.preventDefault();
     setView(i);
+
   }
 
   return (
     <section className="bg-base-200">
       <Navbar />
-      <div className="">
+      <div className="min-h-[90vh]">
         {display && (
           <div className="max-w-md flex justify-flex-start my-10 px-10 min-h-screen">
             <div>
               <ul className="menu bg-base-100 w-56">
                 <li>
-                  <a className="active" onClick={(e) => setViewFn(e, 0)}>
+                  <a className={view==0?'active':''} onClick={(e) => setViewFn(e, 0)}>
                     Redeem warranty
                   </a>
                 </li>
                 <li>
-                  <a onClick={(e) => setViewFn(e, 1)}>Extend warranty</a>
+                  <a className={view==1?'active':''} onClick={(e) => setViewFn(e, 1)}>Extend warranty</a>
                 </li>
                 <li>
-                  <a onClick={(e) => setViewFn(e, 2)}>Request service</a>
+                  <a className={view==2?'active':''} onClick={(e) => setViewFn(e, 2)}>Request service</a>
                 </li>
               </ul>
             </div>
@@ -61,6 +62,11 @@ const Redeem = () => {
                 <Service />
                 </div>}
             </div>
+          </div>
+        )}
+        {!display && (
+          <div className="text-center">
+            <span className="text-xl mt-10">Log in to view your data!</span>
           </div>
         )}
       </div>

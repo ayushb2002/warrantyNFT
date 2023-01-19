@@ -7,6 +7,7 @@ const Product = require('./models/product');
 const Buyer = require('./models/buyer');
 const Retailer = require('./models/retailer');
 const cors = require('cors');
+const Expiry = require("./models/expiry");
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -131,13 +132,13 @@ app.post('/register', async (req, res) => {
         res.send(false);
         return;
     }
-})
+});
 
 app.get('/companies', async (req, res) => {
     const filter = {}
     const all = await Company.find(filter);
     res.send(all);
-})
+});
 
 app.param('company', async (req, res, next, company) => {
     const orgz = await Company.findOne({
@@ -148,7 +149,7 @@ app.param('company', async (req, res, next, company) => {
     }).populate('manufacturer')
     res.send(products);
     next();
-})
+});
 
 app.get('/product/:company', (req, res, next) => {
     res.end();
@@ -190,11 +191,11 @@ app.param('companyWallet', async (req, res, next, companyWallet) => {
     }
     res.send(true);
     next();
-})
+});
 
 app.get('/isCompany/:companyWallet', (req, res, next) => {
     res.end();
-})
+});
 
 app.param('retailerWallet', async (req, res, next, retailerWallet) => {
     const retailer = await Retailer.find({
@@ -206,11 +207,11 @@ app.param('retailerWallet', async (req, res, next, retailerWallet) => {
     }
     res.send(true);
     next();
-})
+});
 
 app.get('/isRetailer/:retailerWallet', (req, res, next) => {
     res.end();
-})
+});
 
 app.param('itemId', async (req, res, next, itemId) => {
     const product = await Product.findOne({'itemId': itemId});
@@ -221,11 +222,11 @@ app.param('itemId', async (req, res, next, itemId) => {
     }
     res.send(product);
     next();
-})
+});
 
 app.get('/item/:itemId', (req, res, next) => {
     res.end();
-})
+});
 
 app.post('/saveNFT', async (req, res) => {
     const buyer = await Buyer.findOne({'wallet': req.body.wallet.toString()});
@@ -239,7 +240,20 @@ app.post('/saveNFT', async (req, res) => {
     buyer.save();
     res.send(true);
     return;
-})
+});
+
+app.post('/extendWarranty', async (req, res) => {
+    const expiry = new Expiry({
+        companyId: req.body.companyId,
+        tokenId: req.body.tokenId,
+        extension: req.body.extension,
+        payment: req.body.payment
+    });
+
+    expiry.save();
+    res.send(true);
+    return;
+});
 
 async function main() {
     await mongoose.connect(process.env.MONGO_URI);

@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Results from "./pages/Results";
 import Redeem from "./pages/Redeem";
+import SellProduct from "./pages/SellProduct";
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
   {
     path: '/redeem',
     element: <Redeem />
+  },
+  {
+    path: '/sellProduct',
+    element: <SellProduct />
   }
 ]);
 

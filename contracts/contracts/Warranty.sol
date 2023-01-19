@@ -100,6 +100,10 @@ contract WarrantyNFT is ERC721URIStorage {
     function timeToExpire(uint256 _tokenId) public view returns (uint256)
     {
         require(_exists(_tokenId), "Token does not exist!");
+        if(isExpired(_tokenId))
+        {
+            return 0;
+        }
         return (trackBuyer[_tokenId][trackBuyer[_tokenId].length - 1].dateOfExpiry - (block.timestamp / 1 days));
     }
 
